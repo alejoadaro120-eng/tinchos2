@@ -1,201 +1,442 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Los Tinchos - Base de Datos Firebase</title>
-  <!-- CDN de Tailwind CSS para estilos -->
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Los Tinchos - Agenda de Turnos</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+}
+
+header {
+    background: #181818;
+    padding: 24px;
+    text-align: center;
+    border-bottom: 2px solid #d4af37;
+}
+
+header h1 {
+    margin: 0;
+    color: #d4af37;
+    font-size: 36px;
+}
+
+header p {
+    margin: 8px 0 0;
+    color: #ccc;
+}
+
+.container {
+    max-width: 1050px;
+    margin: 30px auto;
+    padding: 0 18px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+}
+
+.card {
+    background: #1d1d1d;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 8px 25px rgba(0,0,0,.35);
+}
+
+h2 {
+    margin-top: 0;
+    color: #d4af37;
+}
+
+label {
+    display: block;
+    margin: 14px 0 6px;
+    color: #ddd;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #555;
+    background: #292929;
+    color: white;
+    font-size: 15px;
+}
+
+button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    border: 0;
+    border-radius: 8px;
+    background: #d4af37;
+    color: #111;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover { opacity: .9; }
+
+.turno {
+    background: #292929;
+    border-left: 4px solid #d4af37;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
+    overflow-wrap: anywhere;
+}
+
+.turno strong { color: #d4af37; }
+
+.turno button {
+    width: auto;
+    margin: 10px 6px 0 0;
+    padding: 9px 12px;
+    font-size: 13px;
+}
+
+.modificar {
+    background: #d4af37;
+    color: #111;
+}
+
+.eliminar {
+    background: #b33;
+    color: white;
+}
+
+.cancelar {
+    background: #555;
+    color: white;
+    display: none;
+}
+
+.vacio {
+    color: #aaa;
+    text-align: center;
+    padding: 25px 0;
+}
+
+.mensaje {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    display: none;
+    background: #244d2b;
+    color: #c9ffd0;
+}
+
+@media (max-width: 750px) {
+    .grid { grid-template-columns: 1fr; }
+}
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800 font-sans">
 
-  <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-    
-    <!-- Encabezado -->
-    <header class="mb-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4 border-b pb-4">
-      <div>
-        <h1 class="text-3xl font-bold text-indigo-600">Los Tinchos</h1>
-        <p class="text-gray-500 text-sm">Gestor de datos conectado a Firebase Firestore</p>
-      </div>
-      <div class="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-        Firebase Conectado
-      </div>
-    </header>
+<body>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      
-      <!-- Formulario para agregar datos -->
-      <section class="bg-white p-6 rounded-xl shadow-md md:col-span-1 border border-gray-100 h-fit">
-        <h2 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">Agregar Registro</h2>
-        <form id="dataForm" class="space-y-4">
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Título / Nombre</label>
-            <input type="text" id="inputTitle" required placeholder="Ej. Tarea o Elemento" class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          </div>
-          
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Categoría</label>
-            <select id="inputCategory" class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-              <option value="General">General</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="Importante">Importante</option>
-            </select>
-          </div>
+<header>
+    <h1>💈 LOS TINCHOS</h1>
+    <p>Agenda de turnos - Barbería</p>
+</header>
 
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Descripción / Notas</label>
-            <textarea id="inputDescription" rows="3" placeholder="Escribe detalles aquí..." class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-          </div>
+<div class="container">
+    <div class="grid">
 
-          <button type="submit" id="btnSubmit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg text-sm transition-colors shadow">
-            Guardar en Firebase
-          </button>
-        </form>
-      </section>
+        <section class="card">
+            <h2 id="tituloFormulario">📅 Nuevo turno</h2>
 
-      <!-- Lista de registros guardados -->
-      <section class="bg-white p-6 rounded-xl shadow-md md:col-span-2 border border-gray-100">
-        <div class="flex justify-between items-center mb-4 border-b pb-2">
-          <h2 class="text-xl font-semibold text-gray-700">Registros en Tiempo Real</h2>
-          <span id="itemCount" class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full font-medium">0 elementos</span>
-        </div>
+            <form id="formTurno">
+                <label for="cliente">Nombre del cliente</label>
+                <input id="cliente" type="text"
+                       placeholder="Ej: Alejo Adaro" required>
 
-        <div id="recordsList" class="space-y-3">
-          <!-- Mensaje de carga -->
-          <div id="loading" class="text-center py-8 text-gray-400 text-sm">
-            Cargando registros desde Firebase...
-          </div>
-        </div>
-      </section>
+                <label for="telefono">Teléfono</label>
+                <input id="telefono" type="tel"
+                       placeholder="Ej: 11 1234-5678">
+
+                <label for="barbero">Barbero</label>
+                <select id="barbero" required>
+                    <option value="">Seleccionar barbero</option>
+                    <option>Alejo Adaro</option>
+                    <option>Nicolás Durán</option>
+                </select>
+
+                <label for="servicio">Servicio</label>
+                <select id="servicio" required>
+                    <option value="">Seleccionar servicio</option>
+                    <option>Corte de pelo</option>
+                    <option>Barba</option>
+                    <option>Corte + barba</option>
+                    <option>Diseño</option>
+                </select>
+
+                <label for="fecha">Fecha</label>
+                <input id="fecha" type="date" required>
+
+                <label for="hora">Hora</label>
+                <input id="hora" type="time" required>
+
+                <button type="submit" id="botonGuardar">
+                    ✂️ AGENDAR TURNO
+                </button>
+
+                <button type="button" id="botonCancelar"
+                        class="cancelar" id="btnCancelar">
+                    Cancelar modificación
+                </button>
+
+                <div class="mensaje" id="mensaje"></div>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>📋 Turnos agendados</h2>
+            <div id="listaTurnos">
+                <div class="vacio">Cargando turnos...</div>
+            </div>
+        </section>
 
     </div>
-  </div>
+</div>
 
-  <!-- SCRIPT MODULAR DE FIREBASE -->
-  <script type="module">
-    // Importar librerías de Firebase desde la CDN oficial (versión 10.8.0)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-    import { 
-      getFirestore, 
-      collection, 
-      addDoc, 
-      onSnapshot, 
-      deleteDoc, 
-      doc, 
-      serverTimestamp, 
-      query, 
-      orderBy 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<!-- SCRIPT DE INTEGRACIÓN CON FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+  import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    updateDoc, 
+    deleteDoc, 
+    doc, 
+    onSnapshot, 
+    query 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Configuración de tu aplicación de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDjzyD6FcjMzxNM2UiYj9TpMd1Fakk-D90",
-      authDomain: "los-tinchos.firebaseapp.com",
-      projectId: "los-tinchos",
-      storageBucket: "los-tinchos.firebasestorage.app",
-      messagingSenderId: "544073390438",
-      appId: "1:544073390438:web:e0e0a27346d9770ffe90a7",
-      measurementId: "G-DH4KQYYFDC"
-    };
+  // Configuración de tu Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDjzyD6FcjMzxNM2UiYj9TpMd1Fakk-D90",
+    authDomain: "los-tinchos.firebaseapp.com",
+    projectId: "los-tinchos",
+    storageBucket: "los-tinchos.firebasestorage.app",
+    messagingSenderId: "544073390438",
+    appId: "1:544073390438:web:e0e0a27346d9770ffe90a7",
+    measurementId: "G-DH4KQYYFDC"
+  };
 
-    // Inicializar Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db = getFirestore(app);
+  // Inicialización
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getFirestore(app);
+  const turnosRef = collection(db, "turnos");
 
-    // Referencia a la colección en Firestore ("registros")
-    const registrosRef = collection(db, "registros");
+  // Elementos del DOM
+  const form = document.getElementById("formTurno");
+  const lista = document.getElementById("listaTurnos");
+  const mensaje = document.getElementById("mensaje");
+  const botonGuardar = document.getElementById("botonGuardar");
+  const botonCancelar = document.getElementById("botonCancelar");
+  const tituloFormulario = document.getElementById("tituloFormulario");
 
-    // Elementos del DOM
-    const form = document.getElementById("dataForm");
-    const recordsList = document.getElementById("recordsList");
-    const itemCount = document.getElementById("itemCount");
+  let turnos = [];
+  let idEditando = null;
 
-    // 1. ESCUCHAR CAMBIOS EN TIEMPO REAL (Leer datos)
-    const q = query(registrosRef, orderBy("fecha", "desc"));
-    
-    onSnapshot(q, (snapshot) => {
-      recordsList.innerHTML = "";
-      itemCount.textContent = `${snapshot.docs.length} elementos`;
+  function mostrarMensaje(texto) {
+      mensaje.textContent = texto;
+      mensaje.style.display = "block";
 
-      if (snapshot.empty) {
-        recordsList.innerHTML = `
-          <div class="text-center py-8 text-gray-400 text-sm">
-            No hay registros aún. Agrega uno desde el formulario.
-          </div>`;
-        return;
+      setTimeout(() => {
+          mensaje.style.display = "none";
+      }, 3000);
+  }
+
+  // 1. ESCUCHAR Y MOSTRAR TURNOS EN TIEMPO REAL DESDE FIRESTORE
+  onSnapshot(turnosRef, (snapshot) => {
+      turnos = [];
+      snapshot.forEach((documento) => {
+          turnos.push({
+              id: documento.id,
+              ...documento.data()
+          });
+      });
+
+      mostrarTurnos();
+  }, (error) => {
+      console.error("Error cargando turnos: ", error);
+      lista.innerHTML = '<div class="vacio" style="color: #f87171;">Error de conexión con Firebase. Revisa las reglas de Firestore.</div>';
+  });
+
+  function mostrarTurnos() {
+      lista.innerHTML = "";
+
+      if (turnos.length === 0) {
+          lista.innerHTML = '<div class="vacio">Todavía no hay turnos agendados.</div>';
+          return;
       }
 
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const id = docSnap.id;
+      // Ordenar por fecha y hora
+      turnos.sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
 
-        const card = document.createElement("div");
-        card.className = "p-4 border rounded-lg bg-gray-50 hover:bg-gray-100/50 transition-all flex justify-between items-start gap-4";
+      turnos.forEach((turno) => {
+          const div = document.createElement("div");
+          div.className = "turno";
 
-        card.innerHTML = `
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span class="font-semibold text-gray-800">${data.titulo || "Sin título"}</span>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-medium">
-                ${data.categoria || "General"}
-              </span>
-            </div>
-            <p class="text-sm text-gray-600">${data.descripcion || "Sin descripción"}</p>
-          </div>
-          <button data-id="${id}" class="btn-delete text-red-500 hover:text-red-700 text-xs font-semibold p-1 transition-colors">
-            Eliminar
-          </button>
-        `;
+          div.innerHTML = `
+              <strong>${escapeHTML(turno.cliente)}</strong><br>
+              📞 ${escapeHTML(turno.telefono || "Sin teléfono")}<br>
+              💈 Barbero: ${escapeHTML(turno.barbero)}<br>
+              ✂️ Servicio: ${escapeHTML(turno.servicio)}<br>
+              📅 Fecha: ${escapeHTML(formatearFecha(turno.fecha))}<br>
+              🕐 Hora: ${escapeHTML(turno.hora)}<br>
 
-        recordsList.appendChild(card);
+              <button type="button" class="modificar" data-id="${turno.id}">
+                  ✏️ Modificar turno
+              </button>
+
+              <button type="button" class="eliminar" data-id="${turno.id}">
+                  Eliminar turno
+              </button>
+          `;
+
+          lista.appendChild(div);
       });
 
-      // Agregar eventos de eliminación a los botones
-      document.querySelectorAll(".btn-delete").forEach((button) => {
-        button.addEventListener("click", async (e) => {
-          const docId = e.target.getAttribute("data-id");
+      // Asignar eventos a los botones generados
+      document.querySelectorAll(".modificar").forEach(btn => {
+          btn.addEventListener("click", (e) => modificarTurno(e.target.dataset.id));
+      });
+
+      document.querySelectorAll(".eliminar").forEach(btn => {
+          btn.addEventListener("click", (e) => eliminarTurno(e.target.dataset.id));
+      });
+  }
+
+  // 2. PREPARAR FORMULARIO PARA EDITAR
+  function modificarTurno(id) {
+      const turno = turnos.find(t => t.id === id);
+      if (!turno) return;
+
+      idEditando = id;
+
+      document.getElementById("cliente").value = turno.cliente;
+      document.getElementById("telefono").value = turno.telefono;
+      document.getElementById("barbero").value = turno.barbero;
+      document.getElementById("servicio").value = turno.servicio;
+      document.getElementById("fecha").value = turno.fecha;
+      document.getElementById("hora").value = turno.hora;
+
+      tituloFormulario.textContent = "✏️ Modificar turno";
+      botonGuardar.textContent = "💾 GUARDAR CAMBIOS";
+      botonCancelar.style.display = "block";
+
+      form.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  // 3. CANCELAR MODIFICACIÓN
+  function cancelarModificacion() {
+      idEditando = null;
+      form.reset();
+
+      tituloFormulario.textContent = "📅 Nuevo turno";
+      botonGuardar.textContent = "✂️ AGENDAR TURNO";
+      botonCancelar.style.display = "none";
+      mensaje.style.display = "none";
+  }
+
+  botonCancelar.addEventListener("click", cancelarModificacion);
+
+  // 4. ELIMINAR TURNO EN FIRESTORE
+  async function eliminarTurno(id) {
+      if (confirm("¿Querés eliminar este turno?")) {
           try {
-            await deleteDoc(doc(db, "registros", docId));
+              await deleteDoc(doc(db, "turnos", id));
+              if (idEditando === id) {
+                  cancelarModificacion();
+              }
+              mostrarMensaje("🗑️ Turno eliminado correctamente.");
           } catch (error) {
-            console.error("Error al eliminar el documento: ", error);
-            alert("No se pudo eliminar el registro.");
+              console.error("Error al eliminar: ", error);
+              alert("Ocurrió un error al intentar eliminar el turno.");
           }
-        });
-      });
-    }, (error) => {
-      console.error("Error al obtener registros: ", error);
-      recordsList.innerHTML = `
-        <div class="text-center py-8 text-red-500 text-sm">
-          Error al conectar con la base de datos de Firebase. Verifica las reglas de Firestore.
-        </div>`;
-    });
+      }
+  }
 
-    // 2. GUARDAR DATOS EN FIRESTORE
-    form.addEventListener("submit", async (e) => {
+  // 5. GUARDAR O ACTUALIZAR TURNO EN FIRESTORE
+  form.addEventListener("submit", async function(e) {
       e.preventDefault();
 
-      const titulo = document.getElementById("inputTitle").value;
-      const categoria = document.getElementById("inputCategory").value;
-      const descripcion = document.getElementById("inputDescription").value;
+      const nuevo = {
+          cliente: document.getElementById("cliente").value.trim(),
+          telefono: document.getElementById("telefono").value.trim(),
+          barbero: document.getElementById("barbero").value,
+          servicio: document.getElementById("servicio").value,
+          fecha: document.getElementById("fecha").value,
+          hora: document.getElementById("hora").value
+      };
+
+      // Validar si el barbero ya tiene turno en esa fecha y hora
+      const ocupado = turnos.some(t => 
+          t.id !== idEditando &&
+          t.barbero === nuevo.barbero &&
+          t.fecha === nuevo.fecha &&
+          t.hora === nuevo.hora
+      );
+
+      if (ocupado) {
+          alert("⚠️ Ese barbero ya tiene un turno en esa fecha y hora.");
+          return;
+      }
 
       try {
-        await addDoc(registrosRef, {
-          titulo: titulo,
-          categoria: categoria,
-          descripcion: descripcion,
-          fecha: serverTimestamp()
-        });
-
-        // Limpiar formulario
-        form.reset();
+          if (idEditando !== null) {
+              // Actualizar registro existente
+              await updateDoc(doc(db, "turnos", idEditando), nuevo);
+              cancelarModificacion();
+              mostrarMensaje("✅ Turno modificado correctamente.");
+          } else {
+              // Crear nuevo registro
+              await addDoc(turnosRef, nuevo);
+              form.reset();
+              mostrarMensaje("✅ Turno agendado correctamente.");
+          }
       } catch (error) {
-        console.error("Error al guardar en Firebase: ", error);
-        alert("Ocurrió un error al guardar el registro.");
+          console.error("Error guardando turno: ", error);
+          alert("Error al intentar guardar el turno.");
       }
-    });
-  </script>
+  });
+
+  // Funciones auxiliares
+  function formatearFecha(fecha) {
+      if (!fecha) return "";
+      const partes = fecha.split("-");
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+
+  function escapeHTML(texto) {
+      return String(texto).replace(/[&<>"']/g, function(c) {
+          return {
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#039;"
+          }[c];
+      });
+  }
+</script>
+
 </body>
 </html>
